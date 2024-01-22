@@ -1,0 +1,102 @@
+import re
+import pandas as pd
+from IPython.display import display, HTML
+
+class Token:
+    def __init__(self, type, value, position):
+        self.type = type
+        self.value = value
+        self.position = position
+
+    def __repr__(self):
+        return f'({self.type}, {self.value})'
+
+class TokenType:
+    Identifier = 'Identifier'
+    Number = 'Number'
+    Operator = 'Operator'
+    Separator = 'Separator'
+    Keyword = 'Keyword'
+    Comment = 'Comment'
+
+class Scanner:
+    identifier_regex = re.compile(r'^[a-zA-Z_]\w*$')
+    number_regex = re.compile(r'^\d+$')
+    operators = ['==', '<=', '>=', '!=', '=', '<', '>']
+    separators = ['()', '();', '(', ')']
+    keywords = ['if', 'else', 'while', 'int', 'string']
+
+    def __init__(self):
+        self.tokens = []
+        self.code_buffer = ''
+
+    def display_buffer(self):
+        html_buffer = '<table style="width:100%; border: 1px solid black;">'
+        html_buffer += '<tr><th style="border: 1px solid black;">Token Type</th>'
+        html_buffer += '<th style="border: 1px solid black;">Value</th>'
+        html_buffer += '<th style="border: 1px solid black;">Memory Address</th></tr>'
+
+        for token in self.tokens:
+            type_style = 'color: green;' if token.type == TokenType.Identifier else 'color: red;'
+            value_style = 'color: blue;' if token.type == TokenType.Number else 'color: black;'
+            address_style = 'color: purple;'
+
+            html_buffer += f'<tr><td style="border: 1px solid black; {type_style}">{token.type}</td>'
+            html_buffer += f'<td style="border: 1px solid black; {value_style}">{token.value}</td>'
+            html_buffer += f'<td style="border: 1px solid black; {address_style}">{hex(id(token))}</td></tr>'
+
+        html_buffer += '</table>'
+        display(HTML(html_buffer))
+
+    def tokenize(self, line):
+        self.code_buffer += line
+        words = re.findall(r'\b\w+\b|==|<=|>=|!=|[<>]=|[();]+|\/\/.*', line)
+        current_position = 0
+
+        for word in words:
+            if word.startswith('//'):
+                self.tokens.append(Token(TokenType.Comment, word[2:], current_position))
+            else:
+                self.tokens.append(self.get_token(word, current_position))
+            current_position += len(word)
+
+    def get_token(self, word, position):
+        if self.identifier_regex.match(word):
+            return Token(TokenType.Identifier, word, position)
+        elif self.number_regex.match(word):
+            return Token(TokenType.Number, word, position)
+        elif word in self.operators:
+            return Token(TokenType.Operator, word, position)
+        elif word in self.separators:
+            return Token(TokenType.Separator, word, position)
+        elif word in self.keywords:
+            return Token(TokenType.Keyword, word, position)
+        else:
+            print(f'Warning: Unknown token - {word}')
+            return Token(TokenType.Comment, f'Unknown token - {word}', position)
+
+def display_token_table(tokens):
+    data = {'Index': range(len(tokens)),
+            'Token Type': [token.type for token in tokens],
+            'Value': [token.value if hasattr(token, "value") else "" for token in tokens]}
+    df = pd.DataFrame(data)
+    df_html = df.style.set_table_styles([
+        {'selector': 'th', 'props': [('background-color', 'lightgrey'), ('border', '1px solid black')]},
+        {'selector': 'td', 'props': [('border', '1px solid black')]},
+    ]).render()
+    display(HTML(df_html))
+
+if __name__ == '__main__':
+    file_path = 'read.py'  # Modify the file path accordingly
+
+    scanner = Scanner()
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            scanner.tokenize(line)
+
+    print("\nBuffer:")
+    scanner.display_buffer()
+
+    print("\nToken Table:")
+    display_token_table(scanner.tokens)

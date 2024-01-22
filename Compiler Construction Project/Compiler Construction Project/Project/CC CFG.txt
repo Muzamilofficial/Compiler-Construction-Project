@@ -1,0 +1,63 @@
+
+
+int a;
+int a,b,c;
+float a=5;
+char a=5, b='d', c=5.5;
+string a, b=5, c, d, e=f
+int a=b, c=5;
+float a= x+y;
+char a=f();
+char a=R.L();
+
+
+DS -----> TBVO
+T -----> int|float|char|string|bool
+B -----> bB|b
+V -----> XY
+L -----> A|B|.....|Z|a|b|.....|z
+D -----> 0|1||2|.....|9
+X -----> -|L
+Y -----> -Y|LY|DY|^
+
+
+Sb* -----> bS|^                                      Sa* -----> aS|^
+
+a+
+S -----> aS|a
+         (a+b)*
+S -----> aS|bS|^
+         (a+b)+
+S -----> aS|bS|a|b
+         (aa+ab+ba+bb)
+S -----> aa|bb|ba|bb
+
+b+
+B -----> bB|b
+(_+L+D)*
+S -----> -S|LS|DS|^
+
+
+
+O -----> i|,VO|=WO
+W -----> N|-N|N.N|-N.N|'C'|"S"|BL|V|E|F|10
+N -----> DN|D
+C -----> (0|1|.....|9|A|.....|a|.....+|-|.....|(|}.....)
+S -----> CS|^
+BL -----> True|False
+
+int a2 = "5.5";
+
+DL                                                          int a2="S";
+TBVO                                                              ="CS";
+int BVO                                                           ="5S";
+int bVO                                                           ="5CS";
+int XVO                                                           ="5.S";
+int LYO                                                           ="5.CS";
+int aYO                                                     int a2="5.5";
+int aDYO
+int a2O
+int a2 = WO
+
+
+

@@ -1,0 +1,77 @@
+import re
+import pandas as pd
+
+class Token:
+    def __init__(self, type, value):
+        self.type = type
+        self.value = value
+
+    def __repr__(self):
+        return f'({self.type}, {self.value})'
+
+class TokenType:
+    Identifier = 'Identifier'
+    Number = 'Number'
+    Operator = 'Operator'
+    Separator = 'Separator'
+    Keyword = 'Keyword'
+    Comment = 'Comment'
+
+class Scanner:
+    identifier_regex = re.compile(r'^[a-zA-Z_]\w*$')
+    number_regex = re.compile(r'^\d+$')
+    operators = ['+', '-', '*', '/', '=', '<', '>']
+    separators = [',', ';', '(', ')']
+    keywords = ['if', 'else', 'while', 'int', 'string']
+
+    def __init__(self):
+        self.tokens = []
+
+    def tokenize(self, line):
+        words = re.findall(r'\b\w+\b|==|[\+\-\*/(),;=<>]+|\/\/.*', line)
+
+        for word in words:
+            if word.startswith('//'):
+                self.tokens.append(Token(TokenType.Comment, word[2:]))
+            else:
+                self.tokens.extend(self.get_token(word))
+
+    def get_token(self, word):
+        if self.identifier_regex.match(word):
+            return [Token(TokenType.Identifier, word)]
+        elif self.number_regex.match(word):
+            return [Token(TokenType.Number, word)]
+        elif word == '==':
+            return [Token(TokenType.Operator, '='), Token(TokenType.Operator, '=')]
+        elif word == '()':
+            return [Token(TokenType.Separator, '('), Token(TokenType.Separator, ')')]
+        elif word in self.operators:
+            return [Token(TokenType.Operator, word)]
+        elif word in self.separators:
+            return [Token(TokenType.Separator, word)]
+        elif word in self.keywords:
+            return [Token(TokenType.Keyword, word)]
+        else:
+            print(f'Warning: Unknown token - {word}')
+            return [Token(TokenType.Comment, f'Unknown token - {word}')]
+
+def display_token_table(tokens):
+    pd.set_option('display.max_rows', len(tokens))  # Set the option to display all rows
+    data = {'Index': range(len(tokens)),
+            'Token Type': [token.type for token in tokens],
+            'Value': [token.value if hasattr(token, "value") else "" for token in tokens]}
+    df = pd.DataFrame(data)
+    print(df)
+    pd.reset_option('display.max_rows')  # Reset the option to default
+
+if __name__ == '__main__':
+    file_path = 'read.py'  # Modify the file path accordingly
+
+    scanner = Scanner()
+
+    with open(file_path, 'r') as file:
+        for line in file:
+            scanner.tokenize(line)
+
+    print("\nToken Table:")
+    display_token_table(scanner.tokens)
